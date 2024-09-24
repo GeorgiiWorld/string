@@ -111,7 +111,7 @@ int my_sprintf(char* str, const char* format, ...) {
 
 // здесь выясняется есть ли формат вывода у самого спецификатора
 // %[флаги][ширина][точность][модификаторы][тип преобразования]
-static char* read_format(const char* format, specformat* specforma) {
+char* read_format(const char* format, specformat* specforma) {
   char* tpformat = (char*)format;
   char* pformat = (char*)format + 1;
   int flag = read_flags(pformat, specforma);
@@ -128,7 +128,7 @@ static char* read_format(const char* format, specformat* specforma) {
   return (char*)pformat;  // новая позиция для поиска формата
 }
 
-static int read_flags(const char* format, specformat* specforma) {
+int read_flags(const char* format, specformat* specforma) {
   int flag = my_strspn(format, "-+ #0");
   int count = flag;
   while (count--) {
@@ -155,7 +155,7 @@ static int read_flags(const char* format, specformat* specforma) {
   return flag;
 }
 
-static int read_width(const char* format, specformat* specforma) {
+int read_width(const char* format, specformat* specforma) {
   my_size_t strwidth = my_strspn(format, "1234567890");
   if (strwidth >= 1) {
     char width[256] = {0};
@@ -173,7 +173,7 @@ static int read_width(const char* format, specformat* specforma) {
   return ((specforma->starwidth || specforma->starprec) == true) ? 1 : strwidth;
 }
 
-static int read_precision(const char* format, specformat* specforma) {
+int read_precision(const char* format, specformat* specforma) {
   my_size_t strwidth = 0;
   int dot_count = my_strspn(format, ".");
   if (dot_count > 0) {
@@ -183,7 +183,7 @@ static int read_precision(const char* format, specformat* specforma) {
   return strwidth + ((specforma->dot == true) ? dot_count : 0);
 }
 
-static int read_length(const char* format, specformat* specforma) {
+int read_length(const char* format, specformat* specforma) {
   int length = 0;
   if (my_strspn(format, "hlL") == 1) {
     switch (*format) {
@@ -206,9 +206,8 @@ static int read_length(const char* format, specformat* specforma) {
 
 // подаётся пустая строка, в неё записывается частично отформатированный
 // аргумент
-static void read_and_proc_spec(const char* str, char* argstr,
-                               const char* format, specformat* specforma,
-                               va_list input) {
+void read_and_proc_spec(const char* str, char* argstr, const char* format,
+                        specformat* specforma, va_list input) {
   switch (*format) {
     case 'c':;
       char symb = va_arg(input, int);
@@ -307,7 +306,7 @@ static void read_and_proc_spec(const char* str, char* argstr,
 }
 
 // обработка флагов плюс и пробел
-static int proc_plus_space(char* argstr, specformat* specforma, long num) {
+int proc_plus_space(char* argstr, specformat* specforma, long num) {
   bool shift = false;
   if ((specforma->plus == true) && num >= 0) {
     my_strcat(argstr, "+");
@@ -320,7 +319,7 @@ static int proc_plus_space(char* argstr, specformat* specforma, long num) {
 }
 
 // обработка звёздочек
-static void proc_stars(specformat* specforma, va_list input) {
+void proc_stars(specformat* specforma, va_list input) {
   if (specforma->starwidth == true) {
     specforma->width = va_arg(input, int);
   }
@@ -330,8 +329,8 @@ static void proc_stars(specformat* specforma, va_list input) {
 }
 
 // обработка int
-static void proc_int(char* argstr, specformat* specforma, va_list input,
-                     int notation) {
+void proc_int(char* argstr, specformat* specforma, va_list input,
+              int notation) {
   if (specforma->hLength == true) {
     PROC_TYPE_INT(short, int, input, specforma, argstr, notation);
   } else if (specforma->lLength == true) {
@@ -342,7 +341,7 @@ static void proc_int(char* argstr, specformat* specforma, va_list input,
 }
 
 // обработка unsigned int
-static void proc_uint(char* argstr, specformat* specforma, va_list input) {
+void proc_uint(char* argstr, specformat* specforma, va_list input) {
   if (specforma->hLength == true) {
     PROC_TYPE_INT(unsigned short, unsigned, input, specforma, argstr, 10);
   } else if (specforma->lLength == true) {
@@ -353,7 +352,7 @@ static void proc_uint(char* argstr, specformat* specforma, va_list input) {
 }
 
 // обработка float and double
-static void proc_float(char* argstr, specformat* specforma, va_list input) {
+void proc_float(char* argstr, specformat* specforma, va_list input) {
   if (specforma->LLength == true) {
     PROC_TYPE_FLOAT(long double, long double, input, specforma, argstr);
   } else {
@@ -362,7 +361,7 @@ static void proc_float(char* argstr, specformat* specforma, va_list input) {
 }
 
 // обработка g
-static void proc_flag_g(int width_num, specformat* specforma) {
+void proc_flag_g(int width_num, specformat* specforma) {
   int tprec = (specforma->precision > 0) ? specforma->precision : 6;
   if (width_num >= tprec || width_num <= -tprec) {
     specforma->eSpec = true;
@@ -380,7 +379,7 @@ static void proc_flag_g(int width_num, specformat* specforma) {
 }
 
 // вставка недостающих нулей для точности
-static char* write_precision(char* argstr, specformat* specforma) {
+char* write_precision(char* argstr, specformat* specforma) {
   if ((*argstr == '-' || *argstr == '+' || *argstr == ' ') &&
       specforma->sSpec == false)
     argstr += 1;
@@ -408,7 +407,7 @@ static char* write_precision(char* argstr, specformat* specforma) {
 }
 
 // вставка недостающих символов пробелами или нулями
-static char* write_width(char* argstr, specformat* specforma) {
+char* write_width(char* argstr, specformat* specforma) {
   int width_value = my_strlen(argstr);
   if (width_value < specforma->width) {
     char* targstr = (char*)calloc(specforma->width + 1, sizeof(char));
@@ -442,7 +441,7 @@ static char* write_width(char* argstr, specformat* specforma) {
 }
 
 // вставка отформатированного аргумента в строку
-static char* write(char* str, char* argstr) {
+char* write(char* str, char* argstr) {
   while (*argstr != '\0') {
     *(char*)str++ = *argstr++;
   }
@@ -450,8 +449,8 @@ static char* write(char* str, char* argstr) {
 }
 
 // запись вещественного числа в строку
-static void my_ftoa(char* argstr, long double num, my_size_t accuracy,
-                    specformat* specforma) {
+void my_ftoa(char* argstr, long double num, my_size_t accuracy,
+             specformat* specforma) {
   char* pstr = argstr;
   unsigned long long units;  // левая часть
   unsigned long long decimals;  // правая часть т.е после точки
@@ -499,7 +498,7 @@ static void my_ftoa(char* argstr, long double num, my_size_t accuracy,
 }
 
 // конвертируем num в символы. запись в str. типы: 8ми 10ти 16ти
-static void my_itoa(char* str, long long int num, my_size_t type, bool sharp) {
+void my_itoa(char* str, long long int num, my_size_t type, bool sharp) {
   my_size_t i = 0;
   bool sign = false;
   bool save = (num != 0) ? true : false;
@@ -535,7 +534,7 @@ static void my_itoa(char* str, long long int num, my_size_t type, bool sharp) {
 }
 
 // положительное число из 10ти в 8ми ричную систему
-static my_size_t int_to_oct(my_size_t num) {
+my_size_t int_to_oct(my_size_t num) {
   my_size_t res = 0;
   int i = 0;
   while (num > 0) {
@@ -545,7 +544,7 @@ static my_size_t int_to_oct(my_size_t num) {
   return res;
 }
 
-static void to_upper(char* str) {
+void to_upper(char* str) {
   for (my_size_t i = 0; i < my_strlen(str); i++) {
     if (str[i] >= 'a' && str[i] <= 'z') {
       str[i] = str[i] - 32;
