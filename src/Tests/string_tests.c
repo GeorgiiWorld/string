@@ -357,7 +357,6 @@ START_TEST(my_memmove2_test) {
   char string[STR] = "helloworld123";
   char string1[STR] = "hell\0oworld";
   char string2[STR] = "hell\noworld";
-  char string3[STR] = "h1ell oworld";
 
   char string4[STR] = {0};
   char string5[STR] = {0};
@@ -386,7 +385,6 @@ START_TEST(my_memmove3_test) {
   char string5[STR] = "hell\noworld";
   char string6[STR] = "h1ell oworld";
   char string7[STR] = "h1ell oworld";
-  char *string8 = NULL;
 
   my_memmove(string + 3, string, 15);
   memmove(string1 + 3, string1, 15);
@@ -467,7 +465,6 @@ START_TEST(my_strcat_test) {
   char string1[100] = "hell\0oworld";
   char string2[100] = "hello world";
   char string3[100] = "hello\nworld";
-  char string4[100] = "helloworld";
 
   ck_assert_str_eq(strcat(string1, string), my_strcat(string1, string));
   ck_assert_str_eq(strcat(string2, string), my_strcat(string2, string));
@@ -482,7 +479,6 @@ START_TEST(my_strncat_test) {
   char string1[1024] = "hell\0oworld";
   char string2[1024] = "hello world";
   char string3[1024] = "hello\nworld";
-  char string4[1024] = "helloworld";
 
   ck_assert_str_eq(strncat(string1, string, 15),
                    my_strncat(string1, string, 15));
